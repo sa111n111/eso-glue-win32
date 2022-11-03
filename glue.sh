@@ -26,8 +26,13 @@ start_component() {
     mkfifo "$pipe"
 
     echo "$CMD$EXECUTOR$RESET"
-    ( cd "../components/$COMP_NAME" ; $EXECUTOR < "$pipe" | process_component $COMP_NAME ) &
-    : > "$pipe" # Open the pipe
+    if [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "msys" ]]; then
+            ( cd "../components/$COMP_NAME" ; $EXECUTOR < "$pipe" | process_component $COMP_NAME ) &
+            : > "$pipe"
+    else
+        ( cd "components/$COMP_NAME" ; $EXECUTOR < "$pipe" | process_component $COMP_NAME ) &
+        : > "$pipe" # Open the pipe
+    fi
 }
 
 process_component() {
@@ -53,8 +58,16 @@ process_component() {
     done
 }
 
-start_component "python run.py" INTR
-start_component "python run.py" RLAY
-start_component "python run.py" CONS
+if [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "msys" ]]; then
+    echo "Windows platform detected..."
+    # we are on the win32 platform.
+    start_component "python run.py /dev/ttys003" INTR
+    start_component "python run.py" RLAY
+    start_component "python run.py" CONS
+else
+    start_component "python3 run.py" INTR
+    start_component "python3 run.py" RLAY
+    start_component "python3 run.py" CONS
+fi
 
 while true ; do sleep 1 ; done
