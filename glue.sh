@@ -16,6 +16,14 @@ get_pipe() {
     echo "$RUN_LOCATION/pipe-${COMP_NAME}.fifo"
 }
 
+is_windows_platform() {
+    if [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "msys" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 start_component() {
     EXECUTOR=$1
     COMP_NAME=$2
@@ -26,7 +34,7 @@ start_component() {
     mkfifo "$pipe"
 
     echo "$CMD$EXECUTOR$RESET"
-    if [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "msys" ]]; then
+    if is_windows_platform; then
             ( cd "../components/$COMP_NAME" ; $EXECUTOR < "$pipe" | process_component $COMP_NAME ) &
             : > "$pipe"
     else
@@ -58,7 +66,7 @@ process_component() {
     done
 }
 
-if [[ "$OSTYPE" == "win32" ]] || [[ "$OSTYPE" == "msys" ]]; then
+if is_windows_platform; then
     echo "Windows platform detected..."
     # we are on the win32 platform.
     start_component "python run.py /dev/ttys003" INTR
