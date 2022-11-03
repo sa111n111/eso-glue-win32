@@ -1,2 +1,3 @@
 # eso-glue-win32
-Fix for the glue.sh script
+
+![win32 support for the esoteric-editor glue.](https://github.com/loovjo/esoteric-editor)
